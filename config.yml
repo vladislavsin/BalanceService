@@ -1,0 +1,6 @@
+storage:
+  host: db
+  port: 5432
+  database: balanceservice
+  username: postgres
+  password: 123

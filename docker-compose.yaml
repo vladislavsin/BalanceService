@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+    environment:
+      - DB_PASSWORD=postgres
+    tty: true
+  postgres:
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5436:5432
