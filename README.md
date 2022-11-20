@@ -1,5 +1,8 @@
 # BalanceService
 
+## Запуск
+### go run server.go
+
 ## Api
 ### Основная часть
 #### GET balance/user/id - Получение баланса пользователя
