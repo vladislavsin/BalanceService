@@ -21,13 +21,23 @@ func NewBalanceService(db Storage, logger *logging.Logger) *Service {
 	}
 }
 
-func (s *Service) GetTransactionHistory(balance Balance, sort *transaction.SortingHistory) []transaction.History {
+func (s *Service) GetTransactionHistory(balance Balance, sort *transaction.SortingHistory) []transaction.ResponseTransactionDTO {
 	transactions, err := s.db.GetTransactionHistory(context.TODO(), balance, sort)
 	if err != nil {
 		s.logger.Fatal(err)
 	}
 
-	return transactions
+	responseTransactions := make([]transaction.ResponseTransactionDTO, 0)
+
+	for _, item := range transactions {
+		var responseTransaction transaction.ResponseTransactionDTO
+		responseTransaction.TransactionType = s.getTransactionTypeMessage(item.TransactionTypeID, item.ServiceID)
+		responseTransaction.Amount = item.Amount
+		responseTransaction.Date = item.CreatedAt.Format("2006-01-02")
+		responseTransactions = append(responseTransactions, responseTransaction)
+	}
+
+	return responseTransactions
 }
 
 func (s *Service) AddAmount(dto BalanceDTO) string {
@@ -133,4 +143,17 @@ func (s *Service) GetUserBalance(dto BalanceDTO) (Balance, error) {
 	}
 
 	return userBalance, nil
+}
+
+func (s *Service) getTransactionTypeMessage(transactionType uint, serviceID uint) string {
+	switch transactionType {
+	case transaction.AddingAmount:
+		return "Зачисление средств на баланс"
+	case transaction.Reservation:
+		return fmt.Sprintf("Резервация средств за услугу с id: %d", serviceID)
+	case transaction.PaidService:
+		return fmt.Sprintf("Списание средств за услугу с id: %d", serviceID)
+	default:
+		return "неизвестный тип"
+	}
 }
