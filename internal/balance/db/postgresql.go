@@ -17,23 +17,27 @@ type db struct {
 }
 
 func (d db) GetTransactionHistory(ctx context.Context, balance balance.Balance, sort *transaction.SortingHistory) ([]transaction.History, error) {
-	q := `SELECT * FROM transaction_history
-		  WHERE balance_id = $1`
+	q := `SELECT id, balance_id, transaction_type_id, service_id, amount, created_at FROM transaction_history WHERE balance_id = $1`
 
-	transactions := make([]transaction.History, 100)
+	transactions := make([]transaction.History, 0)
 
 	q = q + fmt.Sprintf(` ORDER BY %s %s`, sort.Sorting, sort.OrderBy)
 
-	if sort.Pagination != 0 {
-		q = q + fmt.Sprintf(` LIMIT %d`, sort.Pagination)
-	}
+	q = q + fmt.Sprintf(` LIMIT 10 offset %d`, sort.Pagination)
 
-	if err := d.client.QueryRow(ctx, q, reservation.Accept, balance.ID).Scan(transactions); err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			newErr := fmt.Errorf(fmt.Sprintf("SQL Error: %s, Detail: %s, Where: %s, Code: %s", pgErr.Message, pgErr.Detail, pgErr.Where, pgErr.Code))
-			d.logger.Error(newErr)
-			return transactions, newErr
+	d.logger.Info(q)
+
+	rows, err := d.client.Query(ctx, q, balance.ID)
+	if err != nil {
+		d.logger.Fatal(err)
+	}
+	for rows.Next() {
+		var transact transaction.History
+		err = rows.Scan(&transact.ID, &transact.BalanceID, &transact.TransactionTypeID, &transact.ServiceID, &transact.Amount, &transact.CreatedAt)
+		if err != nil {
+			d.logger.Fatal(err)
 		}
+		transactions = append(transactions, transact)
 	}
 
 	return transactions, nil

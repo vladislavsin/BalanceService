@@ -17,7 +17,7 @@ CREATE TABLE transaction_history (
                                      id BIGSERIAL unique,
                                      balance_id BIGINT NOT NULL,
                                      transaction_type_id int NOT NULL,
-                                     service_id BIGINT,
+                                     service_id BIGINT DEFAULT 0,
                                      amount BIGINT NOT NULL,
                                      created_at date,
                                      FOREIGN KEY (balance_id)

@@ -8,7 +8,7 @@ type History struct {
 	TransactionTypeID uint
 	ServiceID         uint
 	Amount            uint
-	CreatedAt         string
+	CreatedAt         time.Time
 }
 
 type SortingHistory struct {
@@ -24,13 +24,12 @@ const (
 )
 
 func New(userBalanceID uint, transactionTypeID uint, amount uint, ServiceID uint) *History {
-	date := time.Now().Format("2006-01-02 15:04")
 	return &History{
 		BalanceID:         userBalanceID,
 		TransactionTypeID: transactionTypeID,
 		ServiceID:         ServiceID,
 		Amount:            amount,
-		CreatedAt:         date,
+		CreatedAt:         time.Now(),
 	}
 }
 

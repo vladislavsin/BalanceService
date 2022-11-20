@@ -56,18 +56,18 @@ func (h *handler) GetTransactionHistory(ctx *gin.Context) {
 		return
 	}
 
-	page := ctx.Param("page")
-	sorting := ctx.Param("sort")
-	orderBy := ctx.Param("order")
+	page := ctx.Query("page")
+	sorting := ctx.Query("sort")
+	orderBy := ctx.Query("order")
 
 	pagination := uint(0)
 
-	if page != "" {
+	if page != "" && page != "0" {
 		ui64, err := strconv.ParseUint(page, 10, 0)
 		if err != nil {
 			h.logger.Fatal(err)
 		}
-		pagination = uint(ui64)
+		pagination = (uint(ui64) - 1) * 10
 	}
 
 	if sorting != "created_at" && sorting != "amount" {
@@ -79,9 +79,9 @@ func (h *handler) GetTransactionHistory(ctx *gin.Context) {
 	}
 
 	sort := transaction.NewSortingHistory(pagination, sorting, orderBy)
-	h.service.GetTransactionHistory(userBalance, sort)
+	response := h.service.GetTransactionHistory(userBalance, sort)
 	ctx.JSON(200, gin.H{
-		"message": "",
+		"message": response,
 	})
 }
 
