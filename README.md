@@ -1,5 +1,8 @@
 # BalanceService
 
+## Конфигурация
+### находится в файле config.yml
+
 ## Запуск
 ### go run server.go
 
